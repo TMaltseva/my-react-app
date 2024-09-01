@@ -12,24 +12,32 @@ export default class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            data: [
-                {name: 'Tamara', salary: 1000, increase: false, rise: true, id: 1},
-                {name: 'Sofiya', salary: 700, increase: true, rise: false, id: 2},
-                {name: 'Ilya', salary: 800, increase: false, rise: false, id: 3},
-            ],
+            data: [],
             term: '',
             filter: 'all'
         }
         this.maxId = 4;
     }
 
-    deleteItem = (id) => {
-        this.setState(({data}) => {
+    componentDidMount() {
+        const data = JSON.parse(localStorage.getItem('employeesData')) || [
+            {name: 'Tamara', salary: 1000, increase: false, rise: true, id: 1},
+            {name: 'Sofiya', salary: 700, increase: true, rise: false, id: 2},
+            {name: 'Ilya', salary: 800, increase: false, rise: false, id: 3},
+        ];
+        this.setState({ data });
+    }
 
-            return {
-                data: data.filter(item => item.id !== id)
-            }
-        })
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.data !== this.state.data) {
+            localStorage.setItem('employeesData', JSON.stringify(this.state.data));
+        }
+    }
+
+    deleteItem = (id) => {
+        this.setState(({data}) => ({
+            data: data.filter(item => item.id !== id)
+        }));
     }
 
     addItem = (name, salary) => {
@@ -57,6 +65,17 @@ export default class App extends Component {
                 return item;
             })
         }))
+    }
+
+    onSalaryChange = (id, newSalary) => {
+        this.setState(({data}) => ({
+            data: data.map(item => {
+                if (item.id === id) {
+                    return {...item, salary: newSalary}
+                }
+                return item;
+            })
+        }));
     }
 
     searchEmp = (items, term) => {
@@ -88,17 +107,6 @@ export default class App extends Component {
         this.setState({filter});
     }
 
-    onSalaryChange = (id, newSalary) => {
-        this.setState(({data}) => ({
-            data: data.map(item => {
-                if (item.id === id) {
-                    return {...item, salary: newSalary}
-                }
-                return item;
-            })
-        }))
-    }
-
     render() {
         const {data, term, filter} = this.state;
         const employees = this.state.data.length;
@@ -119,7 +127,7 @@ export default class App extends Component {
                     data={visibleData}
                     onDelete={this.deleteItem}
                     onToggleProp={this.onToggleProp}
-                    onSalaryChange={this.onSalaryChange}  />
+                    onSalaryChange={this.onSalaryChange} />
                 <EmployeesAddForm onAdd={this.addItem}/>
     
             </div>
